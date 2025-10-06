@@ -16,7 +16,7 @@
 		<section class="border-b border-gray-100 bg-gradient-to-b from-violet-50 to-white py-12 md:py-16">
 			<div class="container mx-auto max-w-6xl px-4 text-center">
 				<h1 class="mb-4 text-4xl font-bold text-gray-900 md:text-5xl lg:text-6xl">
-					Gallery of <span class="bg-gradient-to-r from-violet-600 to-purple-600 bg-clip-text text-transparent">AI-Generated</span> Videos
+					<span class="text-violet-700">Gallery</span>
 				</h1>
 				<p class="mx-auto max-w-2xl text-lg text-gray-600 md:text-xl">
 					Explore stunning animated videos created by our community. Hover over any image to see it come to life!
