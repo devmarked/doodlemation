@@ -24,9 +24,8 @@ vite.config.ts.timestamp-*
 
 # Documentation
 *.md
+!README.md
 
-# Txt files
-*.txt
 
 # IDE
 .cursor/
