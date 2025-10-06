@@ -1,0 +1,67 @@
+@import 'tailwindcss';
+@plugin '@tailwindcss/forms';
+@plugin '@tailwindcss/typography';
+
+/* Custom color palette */
+:root {
+	--color-primary: #7c3aed;
+	--color-primary-hover: #6d28d9;
+	--color-secondary: #4b5563;
+	--color-success: #10b981;
+	--color-error: #ef4444;
+	--color-warning: #f59e0b;
+}
+
+/* Apply Plus Jakarta Sans globally */
+body {
+	font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+/* Custom animations */
+@keyframes shimmer {
+	0% {
+		background-position: -1000px 0;
+	}
+	100% {
+		background-position: 1000px 0;
+	}
+}
+
+.animate-shimmer {
+	animation: shimmer 2s infinite linear;
+	background: linear-gradient(to right, #f3f4f6 0%, #e5e7eb 20%, #f3f4f6 40%, #f3f4f6 100%);
+	background-size: 1000px 100%;
+}
+
+/* Loading skeleton */
+.skeleton {
+	@apply animate-pulse bg-gray-200 rounded;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+	width: 8px;
+	height: 8px;
+}
+
+::-webkit-scrollbar-track {
+	@apply bg-gray-100;
+}
+
+::-webkit-scrollbar-thumb {
+	@apply bg-gray-400 rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+	@apply bg-gray-500;
+}
+
+/* Smooth transitions */
+* {
+	@apply transition-colors duration-200;
+}
+
+/* Focus visible for accessibility */
+*:focus-visible {
+	@apply outline-none ring-2 ring-blue-500 ring-offset-2;
+}

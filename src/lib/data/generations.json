@@ -1,0 +1,35 @@
+{
+	"generations": [
+		{
+			"id": "550e8400-e29b-41d4-a716-446655440000",
+			"imageUrl": "https://zecemnsmhxacyhbcofzm.supabase.co/storage/v1/object/public/user-images/anonymous/1759726864757-images%20(1).jpg",
+			"videoUrl": "https://replicate.delivery/xezq/nwlQPNwFLsaBOdm38IYAIXyW9SJ2eeyqK6Hx7FAGkmFQ9PcVA/tmp2if8j0hn.mp4",
+			"prompt": "A beautiful sunset over mountains with birds flying in the sky",
+			"createdAt": "2025-10-06T12:00:00.000Z",
+			"model": "minimax/hailuo-02",
+			"duration": 6,
+			"resolution": "768p"
+		},
+		{
+			"id": "6ba7b810-9dad-11d1-80b4-00c04fd430c8",
+			"imageUrl": "https://zecemnsmhxacyhbcofzm.supabase.co/storage/v1/object/public/user-images/anonymous/1759726864757-images%20(1).jpg",
+			"videoUrl": "https://replicate.delivery/xezq/nwlQPNwFLsaBOdm38IYAIXyW9SJ2eeyqK6Hx7FAGkmFQ9PcVA/tmp2if8j0hn.mp4",
+			"prompt": "A cat playing with a ball of yarn in slow motion",
+			"createdAt": "2025-10-06T11:30:00.000Z",
+			"model": "minimax/hailuo-02",
+			"duration": 10,
+			"resolution": "1080p"
+		},
+		{
+			"id": "7c9e6679-7425-40de-944b-e07fc1f90ae7",
+			"imageUrl": "https://zecemnsmhxacyhbcofzm.supabase.co/storage/v1/object/public/user-images/anonymous/1759726864757-images%20(1).jpg",
+			"videoUrl": "https://replicate.delivery/xezq/nwlQPNwFLsaBOdm38IYAIXyW9SJ2eeyqK6Hx7FAGkmFQ9PcVA/tmp2if8j0hn.mp4",
+			"prompt": "Waves crashing on a beach with seagulls in the distance",
+			"createdAt": "2025-10-06T10:15:00.000Z",
+			"model": "minimax/hailuo-02",
+			"duration": 6,
+			"resolution": "512p"
+		}
+	]
+}
+
