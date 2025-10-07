@@ -156,13 +156,13 @@ CRITICAL RULES FOR 6-SECOND VIDEOS:
 }
 
 /**
- * Generate video using Replicate's MiniMax Hailuo-02 model
+ * Start video generation using Replicate's MiniMax Hailuo-02 model (async)
  * @param imageUrl - URL of the first frame image
  * @param prompt - Text description of the video animation
  * @param duration - Video duration in seconds (6 or 10)
  * @param resolution - Video resolution (512p, 768p, or 1080p)
  * @param promptOptimizer - Whether to use prompt optimization
- * @returns Prediction ID and video URL (when complete)
+ * @returns Prediction ID (for polling)
  */
 export async function generateVideo(
 	imageUrl: string,
@@ -170,7 +170,7 @@ export async function generateVideo(
 	duration: VideoDuration = 6,
 	resolution: VideoResolution = '512p',
 	promptOptimizer: boolean = false
-): Promise<{ predictionId: string; status: string; videoUrl?: string }> {
+): Promise<{ predictionId: string; status: string }> {
 	try {
 		const input: ReplicateInput = {
 			prompt,
@@ -180,39 +180,78 @@ export async function generateVideo(
 			prompt_optimizer: promptOptimizer
 		};
 
-		console.log('Starting Replicate video generation:', {
+		console.log('Starting Replicate video generation (async):', {
 			...input,
 			first_frame_image: '...'
 		});
 
-		// Run the prediction
-		const output = await replicate.run('minimax/hailuo-02', { input });
+		// Create prediction asynchronously (doesn't wait for completion)
+		const prediction = await replicate.predictions.create({
+			version: '99223170e5e95a9f2e6e3da06b85a3dc1d1dc71fdc5610269bc2de10bde4ae8f', // minimax/hailuo-02 version
+			input
+		});
 
-		console.log('Replicate prediction completed:', output);
-
-		// Replicate returns the output directly when complete
-		let videoUrl: string | undefined;
-
-		if (output && typeof output === 'object' && 'url' in output) {
-			videoUrl = (output as any).url();
-		} else if (typeof output === 'string') {
-			videoUrl = output;
-		} else if (Array.isArray(output) && output.length > 0) {
-			videoUrl = output[0];
-		}
+		console.log('Replicate prediction started:', prediction.id);
 
 		return {
-			predictionId: 'completed',
-			status: 'complete',
-			videoUrl
+			predictionId: prediction.id,
+			status: prediction.status
 		};
 	} catch (err) {
 		console.error('Video generation error:', err);
-		throw new Error(err instanceof Error ? err.message : 'Failed to generate video');
+		throw new Error(err instanceof Error ? err.message : 'Failed to start video generation');
 	}
 }
 
-// Note: With Replicate, we don't need separate status checking
-// The replicate.run() method handles polling automatically and returns
-// the final result when complete
+/**
+ * Check the status of a Replicate prediction
+ * @param predictionId - The prediction ID to check
+ * @returns Prediction status and video URL (when complete)
+ */
+export async function checkPredictionStatus(predictionId: string): Promise<{
+	status: string;
+	videoUrl?: string;
+	error?: string;
+}> {
+	try {
+		const prediction = await replicate.predictions.get(predictionId);
+
+		console.log('Prediction status:', prediction.status);
+
+		if (prediction.status === 'succeeded') {
+			let videoUrl: string | undefined;
+
+			// Extract video URL from output
+			if (prediction.output && typeof prediction.output === 'object' && 'url' in prediction.output) {
+				videoUrl = (prediction.output as any).url;
+			} else if (typeof prediction.output === 'string') {
+				videoUrl = prediction.output;
+			} else if (Array.isArray(prediction.output) && prediction.output.length > 0) {
+				videoUrl = prediction.output[0];
+			}
+
+			return {
+				status: 'succeeded',
+				videoUrl
+			};
+		} else if (prediction.status === 'failed' || prediction.status === 'canceled') {
+			const errorMessage = typeof prediction.error === 'string' 
+				? prediction.error 
+				: (prediction.error as any)?.message || 'Prediction failed';
+			
+			return {
+				status: prediction.status,
+				error: errorMessage
+			};
+		}
+
+		// Still processing
+		return {
+			status: prediction.status
+		};
+	} catch (err) {
+		console.error('Error checking prediction status:', err);
+		throw new Error(err instanceof Error ? err.message : 'Failed to check prediction status');
+	}
+}
 

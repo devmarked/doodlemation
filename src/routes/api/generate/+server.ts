@@ -34,30 +34,21 @@ export const POST: RequestHandler = async (event) => {
 			promptOptimizer = false
 		} = validation.data;
 
-		console.log('Starting Replicate video generation:', {
+		console.log('Starting Replicate video generation (async):', {
 			duration,
 			resolution,
 			promptLength: prompt.length,
 			promptOptimizer
 		});
 
-		// Generate video with Replicate (handles polling automatically)
+		// Start video generation asynchronously (returns prediction ID immediately)
 		const result = await generateVideo(imageUrl, prompt, duration, resolution, promptOptimizer);
 
-		if (!result.videoUrl) {
-			throw error(500, 'Video generation completed but no video URL returned');
-		}
+		console.log('Prediction started:', result.predictionId);
 
-		console.log('Video generated successfully, uploading to Supabase...');
-
-		// Upload the generated video to Supabase Storage
-		const supabaseVideoUrl = await uploadVideoFromUrl(result.videoUrl);
-
-		console.log('Video uploaded to Supabase:', supabaseVideoUrl);
-
+		// Return prediction ID immediately for client to poll
 		return json({
 			success: true,
-			videoUrl: supabaseVideoUrl, // Return Supabase URL instead of Replicate URL
 			predictionId: result.predictionId,
 			status: result.status,
 			model: 'minimax/hailuo-02',
@@ -71,7 +62,7 @@ export const POST: RequestHandler = async (event) => {
 			throw err;
 		}
 
-		const message = err instanceof Error ? err.message : 'Failed to generate video';
+		const message = err instanceof Error ? err.message : 'Failed to start video generation';
 		throw error(500, message);
 	}
 };

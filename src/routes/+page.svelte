@@ -46,6 +46,44 @@
 		error = null;
 	}
 
+	async function pollPredictionStatus(predictionId: string) {
+		const maxAttempts = 120; // 120 attempts = 10 minutes max (5 second intervals)
+		let attempts = 0;
+
+		while (attempts < maxAttempts) {
+			try {
+				const response = await fetch(`/api/status/${predictionId}`);
+				
+				if (!response.ok) {
+					throw new Error('Failed to check status');
+				}
+
+				const data = await response.json();
+				console.log('Status check:', data);
+
+				if (data.status === 'succeeded' && data.videoUrl) {
+					// Video generation complete!
+					return {
+						success: true,
+						videoUrl: data.videoUrl,
+						predictionId: data.predictionId
+					};
+				} else if (data.status === 'failed' || data.status === 'canceled') {
+					throw new Error(data.error || 'Video generation failed');
+				}
+
+				// Still processing, wait 5 seconds before next check
+				await new Promise(resolve => setTimeout(resolve, 5000));
+				attempts++;
+			} catch (err) {
+				console.error('Status check error:', err);
+				throw err;
+			}
+		}
+
+		throw new Error('Video generation timed out');
+	}
+
 	async function generateVideo() {
 		if (!uploadedImageUrl || !selectedPrompt) return;
 
@@ -54,7 +92,7 @@
 		const perf = measurePerformance('video-generation');
 
 		try {
-			// Generate video with Replicate (handles polling automatically!)
+			// Start video generation (returns prediction ID immediately)
 			const response = await fetch('/api/generate', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
@@ -68,34 +106,39 @@
 			});
 
 			if (!response.ok) {
-				throw new Error('Failed to generate video');
+				throw new Error('Failed to start video generation');
 			}
 
 			const data = await response.json();
+			console.log('Generation started:', data);
 
-			// Replicate returns the video URL directly when complete
-			if (data.success && data.videoUrl) {
-				videoResult = {
-					success: true,
-					videoUrl: data.videoUrl,
-					predictionId: data.predictionId,
-					model: 'minimax/hailuo-02'
-				};
-				generationStatus = 'complete';
+			if (!data.success || !data.predictionId) {
+				throw new Error('Failed to start video generation');
+			}
 
-				// Auto-save the generation
-				if (uploadedImageUrl && selectedPrompt && data.videoUrl) {
-					saveGeneration(
-						uploadedImageUrl,
-						data.videoUrl,
-						selectedPrompt,
-						data.model || 'minimax/hailuo-02',
-						data.duration,
-						data.resolution
-					);
-				}
-			} else {
-				throw new Error('Video generation failed: No video URL returned');
+			currentPredictionId = data.predictionId;
+
+			// Poll for completion
+			const result = await pollPredictionStatus(data.predictionId);
+
+			videoResult = {
+				success: true,
+				videoUrl: result.videoUrl,
+				predictionId: result.predictionId,
+				model: 'minimax/hailuo-02'
+			};
+			generationStatus = 'complete';
+
+			// Auto-save the generation
+			if (uploadedImageUrl && selectedPrompt && result.videoUrl) {
+				saveGeneration(
+					uploadedImageUrl,
+					result.videoUrl,
+					selectedPrompt,
+					data.model || 'minimax/hailuo-02',
+					data.duration,
+					data.resolution
+				);
 			}
 
 			perf.end();
