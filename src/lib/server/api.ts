@@ -22,6 +22,9 @@ const replicate = new Replicate({
 	auth: REPLICATE_API_TOKEN
 });
 
+// Cache for model version (to avoid repeated lookups)
+let cachedModelVersion: string | null = null;
+
 // Validate API keys on startup
 if (!OPENAI_API_KEY) {
 	throw new Error('OPENAI_API_KEY is not configured');
@@ -185,9 +188,23 @@ export async function generateVideo(
 			first_frame_image: '...'
 		});
 
+		// Get model version (use cache if available)
+		if (!cachedModelVersion) {
+			console.log('Fetching latest model version...');
+			const model = await replicate.models.get('minimax', 'hailuo-02');
+			const latestVersion = model.latest_version;
+
+			if (!latestVersion) {
+				throw new Error('Failed to get latest model version');
+			}
+
+			cachedModelVersion = latestVersion.id;
+			console.log('Cached model version:', cachedModelVersion);
+		}
+
 		// Create prediction asynchronously (doesn't wait for completion)
 		const prediction = await replicate.predictions.create({
-			version: '99223170e5e95a9f2e6e3da06b85a3dc1d1dc71fdc5610269bc2de10bde4ae8f', // minimax/hailuo-02 version
+			version: cachedModelVersion,
 			input
 		});
 
